@@ -1,0 +1,45 @@
+object Form1: TForm1
+  Left = 0
+  Top = 0
+  BorderIcons = [biSystemMenu, biMinimize]
+  BorderStyle = Single
+  Caption = 'Homography'
+  ClientHeight = 532
+  ClientWidth = 1054
+  Position = ScreenCenter
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
+  DesignerMasterStyle = 0
+  object Image1: TImage
+    MultiResBitmap = <
+      item
+      end>
+    Position.X = 10.000000000000000000
+    Position.Y = 10.000000000000000000
+    Size.Width = 512.000000000000000000
+    Size.Height = 512.000000000000000000
+    Size.PlatformDefault = False
+    OnMouseDown = Image1MouseDown
+    OnMouseMove = Image1MouseMove
+    OnMouseUp = Image1MouseUp
+  end
+  object Image2: TImage
+    MultiResBitmap = <
+      item
+      end>
+    Position.X = 532.000000000000000000
+    Position.Y = 10.000000000000000000
+    Size.Width = 512.000000000000000000
+    Size.Height = 512.000000000000000000
+    Size.PlatformDefault = False
+  end
+  object Timer1: TTimer
+    Interval = 10
+    OnTimer = Timer1Timer
+    Left = 30
+    Top = 30
+  end
+end
