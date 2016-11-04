@@ -13,24 +13,26 @@ type
     Image2: TImage;
     Timer1: TTimer;
     procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure Image1Paint(Sender: TObject; Canvas: TCanvas; const ARect: TRectF);
     procedure Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
     procedure Image1MouseMove(Sender: TObject; Shift: TShiftState; X, Y: Single);
     procedure Image1MouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
-    procedure FormDestroy(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
   private
     { private 宣言 }
     _MouseS :Byte;
+    _BMP    :TBitmapData;
     /////
-    procedure DrawPoin( const Center_:TPointF; const Size_:Single; const Color_:TAlphaColor );
-    function GetMapColor( const P_:TPointF ) :TAlphaColor;
+    procedure DrawPoin( const Canvas_:TCanvas;
+                        const Center_:TPointF;
+                        const Radius_:Single;
+                        const Color_ :TAlphaColor );
+    function GetColor( const P_:TPointF ) :TAlphaColor;
   public
     { public 宣言 }
-    _BMP   :TBitmap;
-    _MAP   :TBitmapData;
     _Trans :THomography;
     /////
-    procedure ShowFrame;
     procedure Cutout;
   end;
 
@@ -45,14 +47,16 @@ uses System.Math, System.Threading;
 
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& private
 
-procedure TForm1.DrawPoin( const Center_:TPointF; const Size_:Single; const Color_:TAlphaColor );
+procedure TForm1.DrawPoin( const Canvas_:TCanvas;
+                           const Center_:TPointF;
+                           const Radius_:Single;
+                           const Color_ :TAlphaColor );
 var
-   R0, R1 :Single;
+   R1 :Single;
 begin
-     R0 := Size_ / 2;
-     R1 := R0 + 2;
+     R1 := Radius_ + 2;
 
-     with Image1.Bitmap.Canvas do
+     with Canvas_ do
      begin
           Fill.Color := TAlphaColorRec.White;
 
@@ -60,46 +64,22 @@ begin
 
           Fill.Color := Color_;
 
-          with Center_ do FillEllipse( TRectF.Create( X-R0, Y-R0, X+R0, Y+R0 ), 1 );
+          with Center_ do FillEllipse( TRectF.Create( X-Radius_, Y-Radius_,
+                                                      X+Radius_, Y+Radius_ ), 1 );
      end;
 end;
 
-function TForm1.GetMapColor( const P_:TPointF ) :TAlphaColor;
+function TForm1.GetColor( const P_:TPointF ) :TAlphaColor;
 var
    X, Y :Integer;
 begin
      X := LoopMod( Floor( P_.X ), 512 );
      Y := LoopMod( Floor( P_.Y ), 512 );
 
-     Result := _MAP.GetPixel( X, Y );
+     Result := _BMP.GetPixel( X, Y );
 end;
 
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&& public
-
-procedure TForm1.ShowFrame;
-begin
-     with Image1.Bitmap.Canvas do
-     begin
-          BeginScene;
-
-          DrawBitmap( _BMP, TRectF.Create( 0, 0, 512, 512 ), TRectF.Create( 0, 0, 512, 512 ), 1 );
-
-          Stroke.Thickness := 2;
-          Stroke.Color     := TAlphaColorRec.White;
-          Stroke.Join      := TStrokeJoin.Round;
-
-          DrawPolygon( [ _Trans.Poin00, _Trans.Poin01, _Trans.Poin11, _Trans.Poin10, _Trans.Poin00 ], 1 );
-
-          DrawPoin( _Trans.Poin00, 10, $FF00AA00 );
-          DrawPoin( _Trans.Poin01, 10, $FFFD531D );
-          DrawPoin( _Trans.Poin10, 10, $FF00AFFF );
-          DrawPoin( _Trans.Poin11, 10, $FFA88F00 );
-
-          EndScene;
-     end;
-end;
-
-////////////////////////////////////////////////////////////////////////////////
 
 procedure TForm1.Cutout;
 var
@@ -121,12 +101,13 @@ begin
           begin
                P.X := ( X + 0.5 ) / 512;
 
-               if _Trans.ToScreen( P, S ) then C^ := GetMapColor( S )
+               if _Trans.ToScreen( P, S ) then C^ := GetColor( S )
                                           else C^ := TAlphaColorRec.Null;
 
                Inc( C );
           end;
-     end );
+     end,
+     _ThreadPool_ );
 
      Image2.Bitmap.Unmap( B );
 end;
@@ -135,40 +116,52 @@ end;
 
 procedure TForm1.FormCreate(Sender: TObject);
 begin
-     Image1.Bitmap.SetSize( 512, 512 );
-     Image2.Bitmap.SetSize( 512, 512 );
+     _MouseS := 0;
 
      Image1.AutoCapture := True;
 
-     _BMP := TBitmap.Create;
-
-     _MouseS := 0;
-
-     _BMP.LoadFromFile( '..\..\» DATA\Perspective.png' );
-     _BMP.Map( TMapAccess.Read, _MAP );
+     Image1.Bitmap.LoadFromFile( '..\..\_DATA\Perspective.png' );
+     Image1.Bitmap.Map( TMapAccess.Read, _BMP );
 
      _Trans := THomography.Create(
           TPointF.Create( 270, 176 ), TPointF.Create( 488, 203 ),
           TPointF.Create(  66, 302 ), TPointF.Create( 229, 433 ) );
+
+     Image2.Bitmap.SetSize( 512, 512 );
 end;
 
 procedure TForm1.FormDestroy(Sender: TObject);
 begin
      _Trans.Free;
 
-     _BMP.Unmap( _MAP );
-     _BMP.Free;
+     Image1.Bitmap.Unmap( _BMP );
 end;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-procedure TForm1.Timer1Timer(Sender: TObject);
+procedure TForm1.Image1Paint(Sender: TObject; Canvas: TCanvas; const ARect: TRectF);
 begin
-     ShowFrame;
-     Cutout;
+     with Canvas do
+     begin
+          with Stroke do
+          begin
+               Kind      := TBrushKind.Solid;
+               Join      := TStrokeJoin.Round;
+               Thickness := 2;
+               Color     := TAlphaColorRec.White;
+          end;
+
+          DrawPolygon( [ _Trans.Poin00, _Trans.Poin01,
+                         _Trans.Poin11, _Trans.Poin10 ], 1 );
+     end;
+
+     DrawPoin( Canvas, _Trans.Poin00, 5, $FF00AA00 );
+     DrawPoin( Canvas, _Trans.Poin01, 5, $FFFD531D );
+     DrawPoin( Canvas, _Trans.Poin10, 5, $FF00AFFF );
+     DrawPoin( Canvas, _Trans.Poin11, 5, $FFA88F00 );
 end;
 
-////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 procedure TForm1.Image1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Single);
 var
@@ -204,6 +197,15 @@ begin
      Image1MouseMove( Sender, Shift, X, Y );
 
      _MouseS := 0;
+end;
+
+//------------------------------------------------------------------------------
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+     Cutout;
+
+     Image1.Repaint;
 end;
 
 end. //######################################################################### ■

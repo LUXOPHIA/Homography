@@ -17,6 +17,7 @@ object Form1: TForm1
     MultiResBitmap = <
       item
       end>
+    ClipChildren = True
     Position.X = 10.000000000000000000
     Position.Y = 10.000000000000000000
     Size.Width = 512.000000000000000000
@@ -25,6 +26,7 @@ object Form1: TForm1
     OnMouseDown = Image1MouseDown
     OnMouseMove = Image1MouseMove
     OnMouseUp = Image1MouseUp
+    OnPaint = Image1Paint
   end
   object Image2: TImage
     MultiResBitmap = <
