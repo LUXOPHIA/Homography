@@ -276,6 +276,11 @@
             <FormType>fmx</FormType>
         </DCCReference>
         <DCCReference Include="Core.pas"/>
+        <DCCReference Include="_LIBRARY\LUXOPHIA\LUX\LUX.pas"/>
+        <DCCReference Include="_LIBRARY\LUXOPHIA\LUX.FMX\LUX.FMX.pas"/>
+        <DCCReference Include="_LIBRARY\LUXOPHIA\LUX\LUX.D2.pas"/>
+        <DCCReference Include="_LIBRARY\LUXOPHIA\LUX\LUX.D3.pas"/>
+        <DCCReference Include="_LIBRARY\LUXOPHIA\LUX\LUX.D1.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
@@ -303,13 +308,25 @@
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
-                <DeployFile LocalName="$(BDS)\Redist\iossimulator\libcgunwind.1.0.dylib" Class="DependencyModule">
-                    <Platform Name="iOSSimulator">
+                <DeployFile LocalName="Win64\Debug\Homography.exe" Configuration="Debug" Class="ProjectOutput">
+                    <Platform Name="Win64">
+                        <RemoteName>Homography.exe</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>
                 <DeployFile LocalName="$(BDS)\Redist\iossimulator\libPCRE.dylib" Class="DependencyModule">
                     <Platform Name="iOSSimulator">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="$(BDS)\Redist\iossimulator\libcgunwind.1.0.dylib" Class="DependencyModule">
+                    <Platform Name="iOSSimulator">
+                        <Overwrite>true</Overwrite>
+                    </Platform>
+                </DeployFile>
+                <DeployFile LocalName="Win64\Debug\Homography.rsm" Configuration="Debug" Class="DebugSymbols">
+                    <Platform Name="Win64">
+                        <RemoteName>Homography.rsm</RemoteName>
                         <Overwrite>true</Overwrite>
                     </Platform>
                 </DeployFile>

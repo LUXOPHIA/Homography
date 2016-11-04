@@ -5,7 +5,7 @@ interface //####################################################################
 uses
   System.SysUtils, System.Types, System.UITypes, System.Classes, System.Variants,
   FMX.Types, FMX.Controls, FMX.Forms, FMX.Graphics, FMX.Dialogs, FMX.Objects,
-  Core;
+  LUX, LUX.FMX, Core;
 
 type
   TForm1 = class(TForm)
@@ -51,21 +51,16 @@ procedure TForm1.DrawPoin( const Canvas_:TCanvas;
                            const Center_:TPointF;
                            const Radius_:Single;
                            const Color_ :TAlphaColor );
-var
-   R1 :Single;
 begin
-     R1 := Radius_ + 2;
-
      with Canvas_ do
      begin
           Fill.Color := TAlphaColorRec.White;
 
-          with Center_ do FillEllipse( TRectF.Create( X-R1, Y-R1, X+R1, Y+R1 ), 1 );
+          FillCircle( Center_, Radius_ + 2, 1 );
 
           Fill.Color := Color_;
 
-          with Center_ do FillEllipse( TRectF.Create( X-Radius_, Y-Radius_,
-                                                      X+Radius_, Y+Radius_ ), 1 );
+          FillCircle( Center_, Radius_    , 1 );
      end;
 end;
 
@@ -73,8 +68,8 @@ function TForm1.GetColor( const P_:TPointF ) :TAlphaColor;
 var
    X, Y :Integer;
 begin
-     X := LoopMod( Floor( P_.X ), 512 );
-     Y := LoopMod( Floor( P_.Y ), 512 );
+     X := RealMod( Floor( P_.X ), 512 );
+     Y := RealMod( Floor( P_.Y ), 512 );
 
      Result := _BMP.GetPixel( X, Y );
 end;
